@@ -1,0 +1,6 @@
+{
+  "name": "CareerVault AI",
+  "description": "Personal job application tracker, resume and job description vault, recruitment round timeline, and AI placement assistant powered by IndexedDB and Gemini.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

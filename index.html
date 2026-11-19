@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareerVault AI — Personal Job Application Tracker &amp; Placement Assistant</title>
+    <meta
+      name="description"
+      content="Personal job application tracker, resume and job description PDF vault, recruitment round timeline, and AI placement assistant powered by IndexedDB and Gemini."
+    />
+    <meta property="og:title" content="CareerVault AI" />
+    <meta
+      property="og:description"
+      content="Personal job application tracker, resume and job description vault, recruitment round timeline, and AI placement assistant."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/vault-logo.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..600&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="app-shell" id="appShell">
+      <!-- Mobile sidebar backdrop -->
+      <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
+
+      <!-- Left Sidebar Navigation -->
+      <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+        <div class="sidebar-brand">
+          <a href="#dashboard" class="brand-link" data-nav="dashboard">
+            <img
+              src="/assets/icons/vault-logo.svg"
+              alt="CareerVault AI logo"
+              class="brand-logo"
+              width="28"
+              height="28"
+            />
+            <span class="brand-name">CareerVault AI</span>
+          </a>
+          <button
+            type="button"
+            class="icon-btn mobile-only"
+            id="closeSidebarBtn"
+            aria-label="Close navigation menu"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <nav class="sidebar-nav" id="sidebarNav">
+          <button type="button" class="nav-item active" data-nav="dashboard" aria-current="page">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+              <rect x="14" y="14" width="7" height="7" rx="1.5" />
+            </svg>
+            <span class="nav-label">Dashboard</span>
+          </button>
+
+          <button type="button" class="nav-item" data-nav="applications">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2" />
+              <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+            </svg>
+            <span class="nav-label">Applications</span>
+            <span class="nav-count" id="navAppsCount">0</span>
+          </button>
+
+          <button type="button" class="nav-item" data-nav="events">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
+            </svg>
+            <span class="nav-label">Upcoming Events</span>
+            <span class="nav-urgent-wrap" id="navUrgentWrap" hidden>
+              <span class="urgent-dot" aria-hidden="true"></span>
+              <span class="nav-urgent-count" id="navUrgentCount">0</span>
+            </span>
+          </button>
+
+          <button type="button" class="nav-item" data-nav="vault">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+            </svg>
+            <span class="nav-label">Document Vault</span>
+          </button>
+
+          <button type="button" class="nav-item" data-nav="assistant">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3l2.4 5.6L20 11l-5.6 2.4L12 19l-2.4-5.6L4 11l5.6-2.4L12 3z" />
+            </svg>
+            <span class="nav-label">AI Assistant</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="storage-summary">
+            <p class="storage-title">Local IndexedDB Vault</p>
+            <p class="storage-meta" id="sidebarStorageMeta">Persists applications &amp; PDFs offline</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Workspace -->
+      <div class="workspace">
+        <!-- Top Header Bar -->
+        <header class="topbar">
+          <div class="topbar-left">
+            <button
+              type="button"
+              class="icon-btn mobile-only"
+              id="openSidebarBtn"
+              aria-label="Open navigation menu"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M3 6h18M3 12h18M3 18h18" />
+              </svg>
+            </button>
+            <nav class="breadcrumb" id="topBreadcrumb" aria-label="Breadcrumb">
+              <span class="breadcrumb-root">CareerVault</span>
+              <span class="breadcrumb-sep" aria-hidden="true">/</span>
+              <span class="breadcrumb-current">Dashboard</span>
+            </nav>
+          </div>
+
+          <div class="topbar-actions">
+            <button type="button" class="btn btn-primary" id="topAddAppBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>Add Application</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Dynamic View Viewport -->
+        <main class="main-content" id="mainContent" tabindex="-1">
+          <!-- Rendered dynamically by js/ui.js -->
+        </main>
+      </div>
+    </div>
+
+    <!-- Modal: Add / Edit Application -->
+    <div class="modal-overlay" id="appModalOverlay" hidden>
+      <div
+        class="modal modal-lg"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="appModalTitle"
+      >
+        <div class="modal-header">
+          <h2 class="modal-title" id="appModalTitle">Add Application</h2>
+          <button
+            type="button"
+            class="icon-btn"
+            data-close-modal="appModalOverlay"
+            aria-label="Close application form"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form id="applicationForm" class="modal-body" novalidate>
+          <input type="hidden" id="appFormId" name="id" />
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="appCompany">Company <span class="required-star">*</span></label>
+              <input
+                type="text"
+                id="appCompany"
+                name="company"
+                placeholder="e.g., HPE, Atlassian, Microsoft"
+                required
+              />
+              <span class="field-error" id="err-company" role="alert"></span>
+            </div>
+
+            <div class="form-field">
+              <label for="appRole">Role / Position <span class="required-star">*</span></label>
+              <input
+                type="text"
+                id="appRole"
+                name="role"
+                placeholder="e.g., Software Engineer — New Grad"
+                required
+              />
+              <span class="field-error" id="err-role" role="alert"></span>
+            </div>
+
+            <div class="form-field">
+              <label for="appLocation">Location</label>
+              <input
+                type="text"
+                id="appLocation"
+                name="location"
+                placeholder="e.g., Bengaluru (Hybrid)"
+              />
+            </div>
+
+            <div class="form-field">
+              <label for="appPackage">Package / Compensation</label>
+              <input
+                type="text"
+                id="appPackage"
+                name="package"
+                placeholder="e.g., 18 LPA or $130k"
+              />
+            </div>
+
+            <div class="form-field">
+              <label for="appDate">Application Date</label>
+              <input type="date" id="appDate" name="applicationDate" />
+            </div>
+
+            <div class="form-field">
+              <label for="appStatus">Status</label>
+              <select id="appStatus" name="status">
+                <option value="Applied">Applied</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Interviewing">Interviewing</option>
+                <option value="Offer">Offer</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Withdrawn">Withdrawn</option>
+              </select>
+              <span class="field-error" id="err-status" role="alert"></span>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="appJobLink">Job Posting Link</label>
+            <input
+              type="url"
+              id="appJobLink"
+              name="jobLink"
+              placeholder="https://careers.company.com/job/..."
+            />
+            <span class="field-error" id="err-jobLink" role="alert"></span>
+          </div>
+
+          <div class="form-field">
+            <label for="appJobDescription">Job Description (Pasted Text)</label>
+            <textarea
+              id="appJobDescription"
+              name="jobDescription"
+              rows="4"
+              placeholder="Paste key responsibilities, required tech stack, and qualifications..."
+            ></textarea>
+          </div>
+
+          <div class="form-field">
+            <label for="appNotes">Notes</label>
+            <textarea
+              id="appNotes"
+              name="notes"
+              rows="2"
+              placeholder="Referral details, prep reminders, recruiter contact..."
+            ></textarea>
+          </div>
+
+          <div class="form-grid" id="appFormFileUploads">
+            <div class="form-field">
+              <label for="appResumeFile">Submitted Resume PDF (Optional)</label>
+              <input
+                type="file"
+                id="appResumeFile"
+                name="resumeFile"
+                accept="application/pdf,.pdf"
+                class="file-input"
+              />
+              <span class="field-hint">Stored locally in IndexedDB (max 15 MB)</span>
+              <span class="field-error" id="err-resumeFile" role="alert"></span>
+            </div>
+
+            <div class="form-field">
+              <label for="appJdFile">Job Description PDF (Optional)</label>
+              <input
+                type="file"
+                id="appJdFile"
+                name="jdFile"
+                accept="application/pdf,.pdf"
+                class="file-input"
+              />
+              <span class="field-hint">Upload official JD PDF if available</span>
+              <span class="field-error" id="err-jdFile" role="alert"></span>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-close-modal="appModalOverlay"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" id="appFormSubmitBtn">
+              Save Application
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Add / Edit Recruitment Round -->
+    <div class="modal-overlay" id="roundModalOverlay" hidden>
+      <div
+        class="modal modal-md"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="roundModalTitle"
+      >
+        <div class="modal-header">
+          <h2 class="modal-title" id="roundModalTitle">Add Recruitment Round</h2>
+          <button
+            type="button"
+            class="icon-btn"
+            data-close-modal="roundModalOverlay"
+            aria-label="Close round form"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form id="roundForm" class="modal-body" novalidate>
+          <input type="hidden" id="roundAppId" name="applicationId" />
+          <input type="hidden" id="roundId" name="roundId" />
+
+          <div class="form-field">
+            <label for="roundType">Round Type <span class="required-star">*</span></label>
+            <select id="roundType" name="type">
+              <option value="Online Assessment">Online Assessment</option>
+              <option value="Coding Test">Coding Test</option>
+              <option value="Technical Interview">Technical Interview</option>
+              <option value="System Design">System Design</option>
+              <option value="Managerial Round">Managerial Round</option>
+              <option value="HR Interview">HR Interview</option>
+              <option value="Final Result">Final Result</option>
+            </select>
+            <span class="field-error" id="err-round-type" role="alert"></span>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="roundDate">Date &amp; Time</label>
+              <input type="datetime-local" id="roundDate" name="date" />
+              <span class="field-error" id="err-round-date" role="alert"></span>
+            </div>
+
+            <div class="form-field">
+              <label for="roundStatus">Status</label>
+              <select id="roundStatus" name="status">
+                <option value="Upcoming">Upcoming</option>
+                <option value="Completed">Completed</option>
+                <option value="Passed">Passed</option>
+                <option value="Failed">Failed</option>
+                <option value="Awaiting Result">Awaiting Result</option>
+              </select>
+              <span class="field-error" id="err-round-status" role="alert"></span>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="roundNotes">Round Notes / Topics</label>
+            <textarea
+              id="roundNotes"
+              name="notes"
+              rows="3"
+              placeholder="Platform link, syllabus, questions asked, or interviewer feedback..."
+            ></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-close-modal="roundModalOverlay"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" id="roundFormSubmitBtn">
+              Save Round
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: In-App PDF Preview -->
+    <div class="modal-overlay" id="pdfModalOverlay" hidden>
+      <div
+        class="modal modal-xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pdfModalTitle"
+      >
+        <div class="modal-header">
+          <div>
+            <h2 class="modal-title" id="pdfModalTitle">Document Preview</h2>
+            <p class="modal-subtitle" id="pdfModalMeta"></p>
+          </div>
+          <div class="modal-header-actions">
+            <button type="button" class="btn btn-secondary btn-sm" id="pdfModalDownloadBtn">
+              Download PDF
+            </button>
+            <button
+              type="button"
+              class="icon-btn"
+              data-close-modal="pdfModalOverlay"
+              aria-label="Close document preview"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="pdf-viewer-body">
+          <iframe id="pdfPreviewFrame" title="PDF Document Preview"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: In-App Delete / Action Confirmation -->
+    <div class="modal-overlay" id="confirmModalOverlay" hidden>
+      <div
+        class="modal modal-sm"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirmModalTitle"
+      >
+        <div class="modal-header">
+          <h2 class="modal-title" id="confirmModalTitle">Confirm Action</h2>
+          <button
+            type="button"
+            class="icon-btn"
+            data-close-modal="confirmModalOverlay"
+            aria-label="Close confirmation dialog"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="confirm-message" id="confirmModalMessage"></p>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-close-modal="confirmModalOverlay"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-danger" id="confirmModalActionBtn">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Region -->
+    <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+    <script type="module" src="/js/app.js"></script>
+  </body>
+</html>
